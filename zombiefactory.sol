@@ -22,11 +22,16 @@ contract ZombieFactory {
     //Arrays: Create a public array of Zombie structs, and name it zombies.
     Zombie[] public zombies;
 
+    // mappings added
+    mapping (uint => address) public zombieToOwner;
+    mapping (address => uint) ownerZombieCount;
+
     // Function Declarations: public
     // function createZombie(string memory _name, uint256 _dna) public {
     
     // Function Declarations: private
-    function _createZombie(string memory _name, uint256 _dna) private {
+    // Function Declarations: internal so that the function call be called inside another function in another file
+    function _createZombie(string memory _name, uint256 _dna) internal {
         
         // Working With Structs and Arrays
         
@@ -38,6 +43,11 @@ contract ZombieFactory {
         // zombies.push(Zombie(_name, _dna))
 
         uint id = zombies.push(Zombie(_name, _dna)) - 1; // modified
+       
+        // Msg.Sender
+        zombieToOwner[id] = msg.sender;
+        ownerZombieCount[msg.sender]++;
+
         // and fire it here after event listener is created
         emit NewZombie(id, _name, _dna);
     }
@@ -51,10 +61,17 @@ contract ZombieFactory {
     }
      //to create a zombie with random dna
     function createRandomZombie(string memory _name) public {
+       
+        // require method  for conditionality
+        require(ownerZombieCount[msg.sender] == 0);
+        
         uint randDna = _generateRandomDna(_name);
         _createZombie(_name, randDna);
     }
 }
 
-// https://share.cryptozombies.io/en/lesson/1/share/NoName
+// contract inheritance
+contract ZombieFeeding is ZombieFactory {
+ 
 }
+// https://share.cryptozombies.io/en/lesson/1/share/NoName
